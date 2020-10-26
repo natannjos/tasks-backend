@@ -4,12 +4,14 @@ module.exports = app => {
     const getTasks = (req, res) => {
         const date = req.query.date ? req.query.date
             : moment().endOf('day').toDate()
-
+        
         app.db('tasks')
             .where({ userId: req.user.id })
             .where('estimateAt', '<=', date)
             .orderBy('estimateAt')
-            .then(tasks => res.json(tasks))
+            .then(tasks => {
+                res.json(tasks)
+            })
             .catch(err => res.status(400).json(err))
     }
 
@@ -49,6 +51,32 @@ module.exports = app => {
             .catch(err => res.status(400).json(err))
     }
 
+    const updateDescAndEstimaetdAt = (req, res, desc, estimateAt) => {
+        app.db('tasks')
+            .where({ id: req.params.id, userId: req.user.id })
+            .update({ desc, estimateAt  })
+            .then(_ => {
+                res.status(204).send()
+            })
+            .catch(err => res.status(400).json(err))
+    }
+
+    const updateTask = (req, res) => {
+        app.db('tasks')
+            .where({ id: req.params.id, userId: req.user.id })
+            .first()
+            .then( task => {
+                if (!task) {
+                    const msg = `Task cin ud ${req.params.id} não encontrada.`
+                    return res.status(400).send(msg)
+                } 
+                const desc = req.body.desc
+                const estimateAt  = req.body.estimateAt
+                updateDescAndEstimaetdAt(req, res, desc, estimateAt)
+            })
+            .catch(err => res.status(400).json(err))
+    }
+
     const toggleTask = (req, res) => {
         app.db('tasks')
             .where({ id: req.params.id, userId: req.user.id })
@@ -65,5 +93,5 @@ module.exports = app => {
             .catch(err => res.status(400).json(err))
     }
 
-    return { getTasks, save, remove, toggleTask }
+    return { getTasks, save, remove, toggleTask, updateTask }
 }
