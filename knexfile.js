@@ -1,6 +1,6 @@
 module.exports = {
 	client: 'postgresql',
-	connection: {
+	connection: process.env.DATABASE_URL || {
 		database: 'tasks',
 		user: 'postgres',
 		password: 'senha123'
@@ -10,6 +10,7 @@ module.exports = {
 		max: 10
 	},
 	migrations: {
+		directory: './migrations',
 		tableName: 'knex_migrations'
 	}
 };
